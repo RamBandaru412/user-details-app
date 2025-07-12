@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Details Form</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        input, button { padding: 10px; margin: 5px 0; width: 100%; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
+        table { margin-top: 20px; width: 100%; display: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Add User Details</h2>
+    <input type="text" id="name" placeholder="Enter Name" />
+    <input type="email" id="email" placeholder="Enter Email" />
+    <button onclick="addUserDetails()">Submit</button>
+
+    <h2>Retrieve User Details by ID</h2>
+    <input type="number" id="userId" placeholder="Enter User ID" />
+    <button onclick="getUserDetails()">Fetch</button>
+
+    <table id="userTable">
+        <thead>
+            <tr><th>ID</th><th>Name</th><th>Email</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="uid"></td>
+                <td id="uname"></td>
+                <td id="uemail"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        function addUserDetails() {
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+
+            if (!name || !email) {
+                alert("Please enter both name and email.");
+                return;
+            }
+
+            fetch("http://localhost:8080/api/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("UserDetails added with ID: " + data.id);
+                document.getElementById("name").value = "";
+                document.getElementById("email").value = "";
+            })
+            .catch(() => alert("Failed to add user."));
+        }
+
+        function getUserDetails() {
+            const id = document.getElementById("userId").value;
+
+            if (!id) {
+                alert("Please enter an ID.");
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/users/${id}`)
+            .then(res => res.json())
+            .then(user => {
+                if (user.id) {
+                    document.getElementById("userTable").style.display = "table";
+                    document.getElementById("uid").innerText = user.id;
+                    document.getElementById("uname").innerText = user.name;
+                    document.getElementById("uemail").innerText = user.email;
+                } else {
+                    alert("UserDetails not found.");
+                    document.getElementById("userTable").style.display = "none";
+                }
+            })
+            .catch(() => {
+                alert("Failed to retrieve user.");
+                document.getElementById("userTable").style.display = "none";
+            });
+        }
+    </script>
+
+</body>
+</html>
